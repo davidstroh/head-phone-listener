@@ -1,5 +1,7 @@
 package com.project.dstroh.bluetoothlistenerv2;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +17,29 @@ public class MyReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context, "Broadcast Intent Detected: " + intent.getAction(), Toast.LENGTH_LONG).show();
+        String action = intent.getAction();
+
+        if(BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            if(device.getName().equals("G18"))
+                Toast.makeText(context, "G18: Name: " + device.getName() +
+                        "\nBluetooth Device Address: " + device.getAddress(), Toast.LENGTH_LONG).show();
+            else
+                Toast.makeText(context, "Anotha one: Name: " + device.getName() +
+                                "\nBluetooth Device Address: " + device.getAddress(), Toast.LENGTH_LONG).show();
+        }
+        else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            if(device.getName().equals("G18"))
+                Toast.makeText(context, "This one: " + device.getName() + " disconnected.", Toast.LENGTH_LONG).show();
+
+            else
+                Toast.makeText(context, "A different BT Device  " + device.getName() +
+                        " disconnected.", Toast.LENGTH_LONG).show();
+
+        }
+        else {
+            Toast.makeText(context, "Non-Bluetooth Broadcast Intent Detected: " + action, Toast.LENGTH_LONG).show();
+        }
     }
 }
