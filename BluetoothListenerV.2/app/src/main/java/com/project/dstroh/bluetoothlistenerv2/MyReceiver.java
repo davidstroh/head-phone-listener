@@ -26,7 +26,6 @@ public class MyReceiver extends BroadcastReceiver {
     FileInputStream inputStream;
     Timer timer;
     DeviceList currentDevices;
-    int currentSpot = -1;
 
     public MyReceiver() {
 
@@ -40,40 +39,43 @@ public class MyReceiver extends BroadcastReceiver {
 
         if(BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            if(device.getName().equals("G18")) {
-                Toast.makeText(context, "G18: Name: " + device.getName() +
+                Toast.makeText(context, "BT: Name: " + device.getName() +
                         "\nBluetooth Device Address: " + device.getAddress(), Toast.LENGTH_LONG).show();
 
                 try{
                     inputStream = context.openFileInput(FILENAME);
-                    int lineCount = 0;
                     timer.reset();
+                    currentDevices.clear();
                     BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder builder = new StringBuilder();
                     String line;
                     while((line = br.readLine()) != null) {
                         String[] words = line.split(",");
-                        if(words[1].equals(device.getAddress())) {
-                            currentSpot = lineCount;
-                            timer.setTime(Double.parseDouble(words[2]));
-                        }
                         currentDevices.add(words);
-                        lineCount++;
-                        //builder.append(line);
-                        //builder.append('\n');
+                        System.out.println("FILE-IN: "+ line);
                     }
+                    if( currentDevices.setSpot(currentDevices.containsName(device.getName())) > -1 ) {
+                        timer.setTime(currentDevices.getTime(currentDevices.getSpot()));
+                        System.out.println("YAYAYAYAYA   " + device.getName() +" FOUND IN FILE @"+ currentDevices.getSpot());
+                    }
+                    else {
+                        String[] tempDevice={ device.getName(), device.getAddress(), "0" } ;
+                        currentDevices.add(tempDevice);
+                        currentDevices.setSpot(currentDevices.getSize() - 1);
+                        System.out.println("NANANANANA   "+ device.getName() +" NOTNONO FOUND IN FILE");
+                    }
+                    System.out.println(currentDevices.print());
                 }
                 catch(FileNotFoundException ex) {
                     timer.reset();
+                    String[] tempDevice={ device.getName(), device.getAddress(), "0" } ;
+                    currentDevices.add(tempDevice);
+                    currentDevices.setSpot(currentDevices.getSize() - 1);
+                    System.out.println("BABABABABA   "+ device.getName() +" BONONO FILE YET");
                 }
                 catch(Exception ex) {
                     ex.printStackTrace();
                 }
                 timer.start();
-            }
-            else
-                Toast.makeText(context, "Anotha one: Name: " + device.getName() +
-                                "\nBluetooth Device Address: " + device.getAddress(), Toast.LENGTH_LONG).show();
         }
         else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -81,37 +83,38 @@ public class MyReceiver extends BroadcastReceiver {
             try {
                 double stopTime = timer.stop();
                 String[] tempList = {device.getName(), device.getAddress(), String.valueOf(stopTime)};
-                if(currentSpot > -1) {
-                    currentDevices.set(currentSpot, tempList);
+                System.out.println("FIRST "+ currentDevices.getSpot() +": "+ currentDevices.print());
+                if(currentDevices.getSpot() > -1) {
+                    currentDevices.set(currentDevices.getSpot(), tempList);
                 }
                 else {
                     currentDevices.add(tempList);
                 }
+                System.out.println("AFTER "+ currentDevices.getSpot() +": "+ currentDevices.print());
 
                 outputStream = context.openFileOutput(FILENAME, Context.MODE_PRIVATE);
                 FileWriter fw = new FileWriter(outputStream.getFD());
 
                 String output = "";
-                for(String[] outDevice : currentDevices.getList()){
-                    output = outDevice[0] + ',' + outDevice[1] + ',' + outDevice[2] +'\n';
-                    //outputStream.write(output.getBytes());
+                System.out.println("device size = "+ currentDevices.getSize());
+                for(int i = 0; i < currentDevices.getSize(); i++) {
+                    output += currentDevices.getName(i) + ',' + currentDevices.getAddress(i) + ',' + currentDevices.getTime(i) +'\n';
                 }
+                System.out.println("WRITE-OUT: " + output);
                 fw.write(output);
                 fw.close();
-                //outputStream.close();
 
                 inputStream = context.openFileInput(FILENAME);
                 BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
                 StringBuilder builder = new StringBuilder();
                 String line;
                 while((line = br.readLine()) != null) {
-                    builder.append(line);
+                    builder.append("++ " + line);
                     builder.append('\n');
                 }
                 System.out.println("We built this house: " + builder.toString());
 
                 Toast.makeText(context, "This one has lasted: " + stopTime + " ayyy.", Toast.LENGTH_LONG).show();
-                //Toast.makeText(context, "This one: " + builder.toString() + " disconnected.", Toast.LENGTH_LONG).show();
 
             }
             catch(Exception ex) {
@@ -126,65 +129,5 @@ public class MyReceiver extends BroadcastReceiver {
 
 
 
-class Timer {
-    private static Timer instance;
-    private double elapsedSeconds;
-    private long begin;
-    //public boolean started = false;
 
-    private Timer() {
-        elapsedSeconds = 0;
-    }
 
-    public static synchronized Timer getInstance() {
-        if(instance == null) {
-            instance = new Timer();
-        }
-        return instance;
-    }
-
-    public void setTime(double previousElapsedSeconds) {
-        elapsedSeconds = previousElapsedSeconds;
-    }
-    public void reset() {
-        elapsedSeconds = 0;
-    }
-
-    public void start() {
-        begin = System.currentTimeMillis();
-        //started = true;
-    }
-    public double stop() {
-        long end = System.currentTimeMillis();
-        long elapsedMillis = (end - begin);
-        System.out.println("Timer stopped at " + TimeUnit.MILLISECONDS.toSeconds(elapsedMillis));
-        elapsedSeconds += TimeUnit.MILLISECONDS.toSeconds(elapsedMillis);
-        return elapsedSeconds;
-    }
-}
-
-class DeviceList {
-    private static DeviceList instance;
-    ArrayList<String[]> devices;
-
-    private DeviceList() {
-        devices = new ArrayList();
-    }
-
-    public static synchronized DeviceList getInstance() {
-        if(instance == null) {
-            instance = new DeviceList();
-        }
-        return instance;
-    }
-
-    public void add(String[] input){
-        devices.add(input);
-    }
-    public void set(int index, String[] input) {
-        devices.set(index, input);
-    }
-    public ArrayList<String[]> getList() {
-        return devices;
-    }
-}
