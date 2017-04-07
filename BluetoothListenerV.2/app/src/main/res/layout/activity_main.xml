@@ -8,10 +8,28 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="?android:attr/colorControlHighlight"
     tools:context="com.project.dstroh.bluetoothlistenerv2.MainActivity">
 
-    <TextView
+
+    <Button
+        android:text="Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:id="@+id/button"
+        android:onClick="updateData" />
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/rv">
+
+    </android.support.v7.widget.RecyclerView>
+
+
+    <!--<ListView
+        android:id="@+id/recipe_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </ListView>-->
 </RelativeLayout>
