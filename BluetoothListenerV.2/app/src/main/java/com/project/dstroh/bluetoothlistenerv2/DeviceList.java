@@ -1,5 +1,12 @@
 package com.project.dstroh.bluetoothlistenerv2;
 
+import android.content.Context;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 
@@ -8,8 +15,16 @@ public class DeviceList {
     ArrayList<String[]> devices;
     private int currentSpot;
 
+    Timer timer;
+
+    private final String FILENAME = "btDevicesTimeFile";
+    FileOutputStream outputStream;
+    FileInputStream inputStream;
+
+
     private DeviceList() {
         devices = new ArrayList();
+        timer = Timer.getInstance();
         currentSpot = -1;
     }
 
@@ -20,9 +35,30 @@ public class DeviceList {
         return instance;
     }
 
-    public void add(String[] input){
+    public void add(String[] input) {
         String[] newInput = {input[0], input[1], input[2]};
         devices.add(newInput);
+    }
+    public void feed(String name, String address) {
+        if( setSpot(containsName(name)) > -1 ) {
+            double tempTime;
+            //if lapsed time is 0, then a bluetooth device was connected, otherwise a bluetooth device was disconnected
+            if((tempTime = timer.lapse()) != 0) {
+                String[] tempArray = { name, address, Double.toString(tempTime) };
+                set(getSpot(), tempArray);
+            }
+            else {
+                timer.setTime(getTime(getSpot()));
+            }
+
+            System.out.println("YAYAYAYAYA   " + name +" FOUND IN FILE @"+ getSpot());
+        }
+        else {
+            String[] tempDevice={ name, address, Double.toString(timer.lapse()) } ;
+            add(tempDevice);
+            setSpot(getSize() - 1);
+            System.out.println("NANANANANA   "+ name +" NOTNONO FOUND IN FILE NOW IS "+ getSpot());
+        }
     }
     public void set(int index, String[] input) {
         String[] newInput = {input[0], input[1], input[2]};
@@ -63,6 +99,57 @@ public class DeviceList {
         }
         return -1;
     }
+
+    public void readFile(Context context) throws Exception {
+        try{
+            inputStream = context.openFileInput(FILENAME);
+            clear();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            while((line = br.readLine()) != null) {
+                String[] words = line.split(",");
+                add(words);
+                System.out.println("FILE-IN: "+ line);
+            }
+            inputStream.close();
+            System.out.println(print());
+        }
+        catch(FileNotFoundException ex) {
+            throw ex;
+            //System.out.println("BABABABABA   "+ getName() +" BONONO FILE YET");
+        }
+        catch(Exception ex) {
+            throw ex;
+        }
+    }
+
+    public void save(Context context) throws Exception {
+
+        if(currentSpot > -1) {
+            String[] tempArray = { getName(currentSpot), getAddress(currentSpot), Double.toString(timer.lapse()) };
+            set(currentSpot, tempArray);
+        }
+
+        try {
+            outputStream = context.openFileOutput(FILENAME, Context.MODE_PRIVATE);
+            FileWriter fw = new FileWriter(outputStream.getFD());
+
+            String output = "";
+            System.out.println("device size = "+ getSize());
+            for(int i = 0; i < getSize(); i++) {
+                output += getName(i) + ',' + getAddress(i) + ',' + getTime(i) +'\n';
+            }
+            System.out.println("WRITE-OUT: " + output);
+            fw.write(output);
+            fw.close();
+        }
+        catch(Exception ex) {
+            throw ex;
+        }
+    }
+
+
 
     public String print() {
         String toReturn = "";

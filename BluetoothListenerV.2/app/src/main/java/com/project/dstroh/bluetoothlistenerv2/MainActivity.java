@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private final String FILENAME = "btDevicesTimeFile";
 
     private ListView mListView;
+    DeviceList devices;
 
     private List<Person> persons;
     private RecyclerView rv;
@@ -55,10 +56,13 @@ public class MainActivity extends AppCompatActivity {
     // Checkout the project associated with this tutorial on Github if
     // you want to use the same images.
     private void initializeData() {
-        persons = new ArrayList<>();
-        persons.add(new Person("Emma Wilson", "23 years old"));
-        persons.add(new Person("Lavery Maiss", "25 years old"));
-        persons.add(new Person("Lillie Watts", "35 years old"));
+        devices = DeviceList.getInstance();
+        try{devices.readFile(this);}
+        catch(Exception ex){ex.printStackTrace();}
+        //persons = new ArrayList<>();
+        //persons.add(new Person("Emma Wilson", "23 years old"));
+        //persons.add(new Person("Lavery Maiss", "25 years old"));
+        //persons.add(new Person("Lillie Watts", "35 years old"));
     }
 
     private void initializeAdapter() {
@@ -68,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateData(View view) {
+        try{devices.save(this);}
+        catch(Exception ex){ex.printStackTrace();}
         adapter.updateData();
     }
 

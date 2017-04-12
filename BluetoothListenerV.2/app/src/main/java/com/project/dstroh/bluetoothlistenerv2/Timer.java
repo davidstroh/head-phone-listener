@@ -25,17 +25,34 @@ public class Timer {
     }
     public void reset() {
         elapsedSeconds = 0;
+        begin = 0;
     }
 
     public void start() {
         begin = System.currentTimeMillis();
         //started = true;
     }
+
+    public double lapse() {
+        double toReturn = elapsedSeconds;
+        if(begin != 0) {
+            long end = System.currentTimeMillis();
+            long elapsedMillis = (end - begin);
+            System.out.println("Timer elapsed at " + TimeUnit.MILLISECONDS.toSeconds(elapsedMillis));
+            toReturn += TimeUnit.MILLISECONDS.toSeconds(elapsedMillis);
+        }
+
+        return toReturn;
+    }
+
     public double stop() {
-        long end = System.currentTimeMillis();
-        long elapsedMillis = (end - begin);
-        System.out.println("Timer stopped at " + TimeUnit.MILLISECONDS.toSeconds(elapsedMillis));
-        elapsedSeconds += TimeUnit.MILLISECONDS.toSeconds(elapsedMillis);
+        if(begin != 0) {
+            long end = System.currentTimeMillis();
+            long elapsedMillis = (end - begin);
+            System.out.println("Timer stopped at " + TimeUnit.MILLISECONDS.toSeconds(elapsedMillis));
+            elapsedSeconds += TimeUnit.MILLISECONDS.toSeconds(elapsedMillis);
+        }
+        begin = 0;
         return elapsedSeconds;
     }
 }
