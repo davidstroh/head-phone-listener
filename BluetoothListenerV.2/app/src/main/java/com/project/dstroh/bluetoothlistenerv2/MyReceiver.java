@@ -22,7 +22,6 @@ public class MyReceiver extends BroadcastReceiver {
 
     private final String FILENAME = "btDevicesTimeFile";
     private final double MAXTIME = 360;
-    Timer timer;
     DeviceList currentDevices;
 
     public MyReceiver() {
@@ -31,43 +30,56 @@ public class MyReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        currentDevices = DeviceList.getInstance(context);
+
         String action = intent.getAction();
-        timer = Timer.getInstance();
-        currentDevices = DeviceList.getInstance();
 
         if(BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //Toast.makeText(context, "BT: Name: " + device.getName() +
                 //        "\nBluetooth Device Address: " + device.getAddress(), Toast.LENGTH_LONG).show();
 
-            timer.reset();
+            if(currentDevices.feed(device.getName(), device.getAddress()) || !currentDevices.hasStarted(device.getName())) {
+                currentDevices.start(device.getName());
+            }
+            else {
+                //IF exists AND hasStarted
+                System.out.print( device.getName() + " device already started..?" );
+            }
 
-                try{
-                    currentDevices.readFile(context);
 
-                    currentDevices.feed(device.getName(), device.getAddress());
 
-                    System.out.println(currentDevices.print());
-                }
-                catch(FileNotFoundException ex) {
+
+            //timer.reset();
+
+                //try{
+                //currentDevices.feed(device.getName(), device.getAddress());
+
+                //System.out.println(currentDevices.print());
+            //}
+                /*catch(FileNotFoundException ex) {
                     currentDevices.feed(device.getName(), device.getAddress());
                     System.out.println("BABABABABA   "+ device.getName() +" BONONO FILE YET");
-                }
-                catch(Exception ex) {
-                    ex.printStackTrace();
-                }
+                }*/
+                //catch(Exception ex) {
+                //    ex.printStackTrace();
+                //}
 
-            timer.start();
+            //timer.start();
         }
         else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
             try {
-                System.out.println("FIRST "+ currentDevices.getSpot() +": "+ currentDevices.print());
+                //System.out.println("FIRST "+ currentDevices.getSpot() +": "+ currentDevices.print());
+                System.out.println("!!!!!!!!!!!!!!!! already in? "+ !currentDevices.feed(device.getName(), device.getAddress()));
+                System.out.println("++++++++++++++++ is going? "+ !currentDevices.hasStarted(device.getName()));
                 currentDevices.feed(device.getName(), device.getAddress());
-                System.out.println("AFTER "+ currentDevices.getSpot() +": "+ currentDevices.print());
-
-                currentDevices.save(context);
+                if(currentDevices.hasStarted(device.getName())) {
+                    currentDevices.stop(device.getName());
+                }
+                //System.out.println("AFTER "+ currentDevices.getSpot() +": "+ currentDevices.print());
+                currentDevices.saveFile();
 
                 /*inputStream = context.openFileInput(FILENAME);
                 BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
@@ -85,12 +97,14 @@ public class MyReceiver extends BroadcastReceiver {
             catch(Exception ex) {
                 ex.printStackTrace();
             }
-            timer.stop();
+            //timer.stop();
         }
         else {
             //Toast.makeText(context, "Non-Bluetooth Broadcast Intent Detected: " + action, Toast.LENGTH_LONG).show();
         }
     }
+
+
 }
 
 

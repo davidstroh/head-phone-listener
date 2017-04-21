@@ -4,21 +4,21 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Timer {
-    private static Timer instance;
+    //private static Timer instance;
     private double elapsedSeconds;
     private long begin;
     //public boolean started = false;
 
-    private Timer() {
+    public Timer() {
         elapsedSeconds = 0;
     }
 
-    public static synchronized Timer getInstance() {
+    /*public static synchronized Timer getInstance() {
         if(instance == null) {
             instance = new Timer();
         }
         return instance;
-    }
+    }*/
 
     public void setTime(double previousElapsedSeconds) {
         elapsedSeconds = previousElapsedSeconds;
@@ -30,6 +30,7 @@ public class Timer {
 
     public void start() {
         begin = System.currentTimeMillis();
+        System.out.println("Started");
         //started = true;
     }
 
@@ -46,6 +47,7 @@ public class Timer {
     }
 
     public double stop() {
+        System.out.println("Stopped: " + (begin != 0));
         if(begin != 0) {
             long end = System.currentTimeMillis();
             long elapsedMillis = (end - begin);
@@ -55,4 +57,9 @@ public class Timer {
         begin = 0;
         return elapsedSeconds;
     }
+
+    public boolean hasBegun() {
+        return begin > 0;
+    }
+
 }

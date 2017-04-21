@@ -1,5 +1,6 @@
 package com.project.dstroh.bluetoothlistenerv2;
 
+import android.content.Context;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -33,8 +34,8 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.DeviceViewHolder> 
 
 
     //public RVAdapter(List<Person> persons) {
-    public RVAdapter() {
-        currentDevices = DeviceList.getInstance();
+    public RVAdapter(Context context) {
+        currentDevices = DeviceList.getInstance(context);
         System.out.println("SIZEHERESIZEHERE:::::: " + currentDevices.getSize());
     }
 

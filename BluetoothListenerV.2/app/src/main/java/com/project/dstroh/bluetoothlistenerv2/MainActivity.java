@@ -42,13 +42,24 @@ public class MainActivity extends AppCompatActivity {
 
         //mListView = (ListView)findViewById(R.idcard.recipe_list_view);
 
-        final ArrayList<String> recipeList = new ArrayList();
-        recipeList.add("hey");recipeList.add("there");recipeList.add("dewy");
+        //final ArrayList<String> recipeList = new ArrayList();
+        //recipeList.add("hey");recipeList.add("there");recipeList.add("dewy");
 
-        String[] listItems = {"hey", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy"};
+        //String[] listItems = {"hey", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy", "there", "dewy"};
 
         /*ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, listItems);
         mListView.setAdapter(adapter);*/
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        try {
+            devices.saveFile();
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 
@@ -56,23 +67,20 @@ public class MainActivity extends AppCompatActivity {
     // Checkout the project associated with this tutorial on Github if
     // you want to use the same images.
     private void initializeData() {
-        devices = DeviceList.getInstance();
-        try{devices.readFile(this);}
+        devices = DeviceList.getInstance(this);
+        try{devices.readFile();}
         catch(Exception ex){ex.printStackTrace();}
-        //persons = new ArrayList<>();
-        //persons.add(new Person("Emma Wilson", "23 years old"));
-        //persons.add(new Person("Lavery Maiss", "25 years old"));
-        //persons.add(new Person("Lillie Watts", "35 years old"));
+
     }
 
     private void initializeAdapter() {
         //RVAdapter adapter = new RVAdapter(persons);
-        adapter = new RVAdapter();
+        adapter = new RVAdapter(this);
         rv.setAdapter(adapter);
     }
 
     public void updateData(View view) {
-        try{devices.save(this);}
+        try{devices.saveFile();}
         catch(Exception ex){ex.printStackTrace();}
         adapter.updateData();
     }
