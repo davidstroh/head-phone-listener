@@ -43,7 +43,7 @@ public class MyReceiver extends BroadcastReceiver {
                 currentDevices.start(device.getName());
             }
             else {
-                //IF exists AND hasStarted
+                //IF exists AND isGoing
                 System.out.print( device.getName() + " device already started..?" );
             }
 
@@ -97,10 +97,14 @@ public class MyReceiver extends BroadcastReceiver {
             catch(Exception ex) {
                 ex.printStackTrace();
             }
-            //timer.stop();
         }
         else {
-            //Toast.makeText(context, "Non-Bluetooth Broadcast Intent Detected: " + action, Toast.LENGTH_LONG).show();
+            try {
+                currentDevices.saveFile();
+            }
+            catch(Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

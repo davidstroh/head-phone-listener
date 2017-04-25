@@ -13,7 +13,7 @@ public class Device {
         name = "";
         address = "";
         //duration = new Timer();
-        duration = null;
+        duration = new Timer();
     }
     public Device(String name, String address) {
         this.name = name;
@@ -23,6 +23,9 @@ public class Device {
     public Device(String name, String address, double elapsedTime) {
         this.name = name;
         this.address = address;
+        if(duration == null) {
+            duration = new Timer();
+        }
         duration.setTime(elapsedTime);
     }
 
@@ -36,7 +39,8 @@ public class Device {
     public double getTime() {
         return duration.lapse();
     }
-    public boolean hasStarted() {
+    //public boolean hasStarted() {}
+    public boolean isGoing() {
         return duration.hasBegun();
     }
 
